@@ -1,14 +1,10 @@
-# Importing the required packages
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras import layers
 from tensorflow.keras import models
 from tensorflow.keras import optimizers
 import matplotlib.pyplot as plt
-%matplotlib inline
-
-# Importing scraped data
 import os
-base_dir = 'C:\\Users\\justi\\DL\\Assignment 1\\'
+base_dir = 'C:\\Users\\Jay\\Desktop\\Hackathon\\dataset'
 
 train_dir = os.path.join(base_dir, 'train')
 validation_dir = os.path.join(base_dir, 'validation')
@@ -35,7 +31,6 @@ validation_generator = test_datagen.flow_from_directory(
         batch_size=20,
         class_mode='categorical')
 
-
 # Training of Model
 model = models.Sequential()
 model.add(layers.Conv2D(32, (3, 3), activation='relu',
@@ -49,10 +44,10 @@ model.add(layers.Conv2D(128, (3, 3), activation='relu'))
 model.add(layers.MaxPooling2D((2, 2)))
 model.add(layers.Flatten())
 model.add(layers.Dense(512, activation='relu'))
-model.add(layers.Dense(10, activation='softmax'))
+model.add(layers.Dense(2, activation='sigmoid'))
 
 # Optimizing model
-model.compile(loss='categorical_crossentropy',
+model.compile(loss='binary_crossentropy',
               optimizer=optimizers.RMSprop(learning_rate=1e-4),
               metrics=['acc'])
 
@@ -91,11 +86,7 @@ history = model.fit(
       epochs = 100,
       validation_data=validation_generator, 
       validation_steps=100) # validation_sample_size / data_batch_size
-
-# Save the Model
 model.save('image_checker.h5')
-
-# Plot the Training and Validation Accuracy & Loss Scores
 acc = history.history['acc']
 val_acc = history.history['val_acc']
 loss = history.history['loss']
@@ -116,5 +107,4 @@ plt.title('Training and validation loss')
 plt.legend()
 
 plt.show()
-
 
