@@ -1,0 +1,61 @@
+import requests
+import os
+import csv 
+
+# URL and API key of pexels to retrieve real dataset
+PEXELS_API_KEY = "czYBpa2xWiDdjlXRiTC117r984Uq9MdQG8XtDhLGHkJ460yJatupC62k"
+BASE_URL = "https://api.pexels.com/v1/search?query=fullface&per_page=80&page="  # Max per_page=80
+
+
+headers = {"Authorization": PEXELS_API_KEY}
+
+os.makedirs("dataset/real", exist_ok=True)
+os.makedirs("dataset/fake", exist_ok=True)
+
+# To generate 13 pages worth of real faces 
+img_num = 0
+for page_num in range(1, 14):
+    response = requests.get(BASE_URL + str(page_num), headers=headers).json()
+
+    for i, photo in enumerate(response["photos"]):
+        img_url = photo["src"]["large"]
+        img_data = requests.get(img_url).content
+        img_num +=1
+        with open(f"dataset/real/pexels_face_{img_num}.jpg", "wb") as file:
+            file.write(img_data)
+        print(f"Downloaded real face {img_num} from Pexels")
+
+# URL of the site that generates AI faces
+url_fake_img = "https://thispersondoesnotexist.com"
+for i in range(1000):
+    
+    img_data = requests.get(url_fake_img)
+    if img_data.status_code == 200:
+        
+        with open(f"dataset/fake/fake_face_{i}.jpg", "wb") as file:
+            file.write(img_data.content)
+        print(f"Downloaded fake face {i+1} from ThisPersonDoesNotExist")
+    else:
+        print("Failed to fetch the image. Status code:", img_data.status_code)
+
+
+# Folder paths
+real_folder = "dataset/real"
+fake_folder = "dataset/fake"
+
+# Create CSV file
+with open("image_data.csv", "w", newline="") as file:
+    writer = csv.writer(file)
+    writer.writerow(["Image Name", "Label", "Source"])
+
+    # Add real images
+    for img in os.listdir(real_folder):
+        img_path = os.path.join(real_folder, img)
+        writer.writerow([img, "Real", "Unsplash",img_path])
+
+    # Add fake images
+    for img in os.listdir(fake_folder):
+        img_path = os.path.join(fake_folder, img)
+        writer.writerow([img, "Fake", "ThisPersonDoesNotExist",img_path])
+
+print("Saved metadata to CSV!")
